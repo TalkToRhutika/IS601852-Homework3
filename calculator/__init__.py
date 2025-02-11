@@ -1,7 +1,7 @@
 """
 Calculator module that provides basic arithmetic operations.
 """
-
+# pylint: disable=unnecessary-dunder-call, invalid-name
 def add(a,b):
     """
     Add two numbers.
