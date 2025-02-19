@@ -1,87 +1,58 @@
 """
-This module contains the Calculation class and the Calculations class,
-which manage a collection of calculation instances and provide history management.
+This module defines two classes: Calculation, which represents a single calculation operation, and Calculations, 
+which manages a history of Calculation instances.
 """
-import math
+from decimal import Decimal
+from typing import Callable, List
 
-
+# Define operation symbols outside the class
+OPERATION_SYMBOLS = {
+    "add": "+",
+    "subtract": "-",
+    "multiply": "*",
+    "divide": "/"
+}
 class Calculation:
     """Represents a single calculation operation."""
-
-    def __init__(self, operation: str, a: float, b: float = 0):
-        """Initializes the calculation object and calculates the result."""
+    def __init__(self, a: Decimal, b: Decimal, operation: Callable): 
+        # [[Decimal, Decimal], Decimal]):
+        if not callable(operation):
+            raise ValueError("Invalid operation provided.")
+        self.a = a
+        self.b = b
         self.operation = operation
+        # self.result = self.perform()
+
+    def perform(self) -> Decimal:
+        """Performs the calculation."""
+        return self.operation(self.a, self.b)
+
+    def update_operands(self, a: Decimal, b: Decimal):
         self.a = a
         self.b = b
-        self.result = self._calculate_result()
 
-    def _calculate_result(self) -> float:
-        """Internal method to calculate the result based on the operation."""
-        operations = {
-            "add": self.a + self.b,
-            "subtract": self.a - self.b,
-            "multiply": self.a * self.b,
-            "divide": self._handle_division(),
-            "percentage": self.a * self.b / 100,
-            "square_root": self._handle_square_root(),
-            "factorial": self._handle_factorial(),
-        }
+    @property
+    def result(self) -> Decimal:
+        return self.operation(self.a, self.b)
 
-        if self.operation in operations:
-            return operations[self.operation]
-        raise ValueError(f"Unknown operation: {self.operation}")
-
-    def _handle_division(self) -> float:
-        """Handles division operation safely."""
-        if self.b == 0:
-            raise ValueError("Cannot divide by zero")
-        return self.a / self.b
-
-    def _handle_square_root(self) -> float:
-        """Handles square root operation safely."""
-        if self.a < 0:
-            raise ValueError("Cannot compute square root of a negative number")
-        return math.sqrt(self.a)
-
-    def _handle_factorial(self) -> int:
-        """Handles factorial operation safely."""
-        if self.a < 0 or not self.a.is_integer():
-            raise ValueError("Factorial is only defined for non-negative integers")
-        return math.factorial(int(self.a))
-
-    def update_operands(self, a: float, b: float = 0) -> None:
-        """Updates the operands and recalculates the result."""
-        self.a = a
-        self.b = b
-        self.result = self._calculate_result()
-
-    def __str__(self) -> str:
-        """Returns a string representation of the calculation."""
-        return f"{self.a} {self.operation} {self.b} = {self.result}"
+    def __str__(self):
+        """Return a string representation of the calculation."""
+        symbol = OPERATION_SYMBOLS.get(self.operation.__name__, "?")
+        return f"{self.a} {symbol} {self.b} = {self.result}"
 
 
 class Calculations:
-    """Manages a collection of Calculation instances and provides history management."""
-    __history = []
+    """Manages a collection of Calculation instances."""
+    _history: List[Calculation] = []
 
     @classmethod
     def add_calculation(cls, calculation: Calculation) -> None:
-        """Adds a calculation instance to the history."""
-        cls.__history.append(calculation)
+        cls._history.append(calculation)
 
     @classmethod
-    def get_last_calculation(cls) -> Calculation:
-        """Retrieves the most recent calculation from the history."""
-        if cls.__history:
-            return cls.__history[-1]
-        raise ValueError("No calculations in history.")
+    def get_history(cls) -> List[Calculation]:
+        return cls._history
 
     @classmethod
     def clear_history(cls) -> None:
-        """Clears the calculation history."""
-        cls.__history.clear()
-
-    @classmethod
-    def get_history(cls) -> list:
-        """Returns the full calculation history."""
-        return cls.__history
+        cls._history.clear()
