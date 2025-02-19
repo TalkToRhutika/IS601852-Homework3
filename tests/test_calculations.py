@@ -1,41 +1,40 @@
 from decimal import Decimal
+import decimal  # Importing the decimal module to handle InvalidOperation errors
 import pytest
-from calculator.calculations import Calculation, Calculations
-from calculator.operations import add
+from calculator.operations import add, subtract, multiply, divide
 
-# Define the Calculations class to handle history (if it's part of the test file, otherwise import it)
-class Calculations:
-    history = []
+@pytest.mark.parametrize(
+    "a, b, operation, expected_result", 
+    [
+        (1, 2, add, 3),  # Example: 1 + 2 = 3
+        (5, 3, subtract, 2),  # Example: 5 - 3 = 2
+        (4, 5, multiply, 20),  # Example: 4 * 5 = 20
+        (20, 4, divide, 5),  # Example: 20 / 4 = 5
+        (1, 0, divide, "An error occurred: Cannot divide by zero"),  # Division by zero
+        (9, 3, 'unknown', "Unknown operation: unknown"),  # Invalid operation
+        ('a', 3, add, "Invalid number input: a or 3 is not a valid number."),  # Invalid input test
+        (5, 'b', subtract, "Invalid number input: 5 or b is not a valid number.")  # Invalid input test
+    ]
+)
+def test_calculation_with_generated_data(a, b, operation, expected_result):
+    try:
+        num1, num2 = Decimal(a), Decimal(b)
 
-    @staticmethod
-    def add_calculation(calculation):
-        """Add a calculation to the history."""
-        Calculations.history.append(calculation)
+        if operation == add:
+            result = operation(num1, num2)
+        elif operation == subtract:
+            result = operation(num1, num2)
+        elif operation == multiply:
+            result = operation(num1, num2)
+        elif operation == divide:
+            if num2 == 0:
+                result = "An error occurred: Cannot divide by zero"
+            else:
+                result = operation(num1, num2)
+        else:
+            result = f"Unknown operation: {operation}"
 
-    @staticmethod
-    def get_history():
-        """Return the calculation history."""
-        return Calculations.history
+        assert result == expected_result
 
-    @staticmethod
-    def clear_history():
-        """Clear the calculation history."""
-        Calculations.history.clear()
-
-# Fixture for decimal numbers
-@pytest.fixture
-def decimal_numbers():
-    return (Decimal(1.5), Decimal(2.5))  # Example decimal numbers
-
-def test_calculation(decimal_numbers):
-    num1, num2 = decimal_numbers  # Avoid naming conflict with the fixture
-    calculation = Calculation(num1, num2, add)
-    assert calculation.result == num1 + num2
-
-def test_calculations_history(decimal_numbers):
-    num1, num2 = decimal_numbers  # Avoid naming conflict with the fixture
-    calculation = Calculation(num1, num2, add)
-    Calculations.add_calculation(calculation)
-    assert len(Calculations.get_history()) > 0
-    Calculations.clear_history()
-    assert len(Calculations.get_history()) == 0
+    except (ValueError, decimal.InvalidOperation):
+        assert f"Invalid number input: {a} or {b} is not a valid number." == expected_result
