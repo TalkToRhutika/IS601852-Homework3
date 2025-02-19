@@ -1,5 +1,5 @@
-import pytest
 from decimal import Decimal
+import pytest
 from calculator.calculator import Calculator, Calculations
 from calculator.calculations import Calculation
 from calculator.operations import add, subtract
@@ -98,9 +98,9 @@ def test_add_calculation():
     num1 = 5
     num2 = 3
     calculation = Calculation(num1, num2, add)
-    
+
     # Add the calculation to the history
     Calculations.add_calculation(calculation)
-    
+
     # Assuming you want to test that the history was updated
     assert len(Calculations.get_history()) > 0
