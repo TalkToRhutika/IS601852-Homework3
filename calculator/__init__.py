@@ -1,27 +1,19 @@
-"""
-Calculator module that provides basic arithmetic operations.
-"""
-# pylint: disable=unnecessary-dunder-call, invalid-name
-def add(a,b):
-    """
-    Add two numbers.
-    """
-    return a + b
+# __init__.py
 
-def multi(a,b):
-    """
-    Multiply two numbers.
-    """
-    return a * b
+# Importing necessary classes and functions to be accessible from the package level
+from .calculator import Calculator
+from .calculations import Calculation, Calculations
+from .operations import add, subtract, multiply, divide, percentage, square_root, factorial
 
-def sub(a,b):
-    """
-    Subtract one number from another.
-    """
-    return a - b
-
-def div(a,b):
-    """
-    Divide one number from another.
-    """
-    return a / b
+__all__ = [
+    "Calculator",
+    "Calculation",
+    "Calculations",
+    "add",
+    "subtract",
+    "multiply",
+    "divide",
+    "percentage",
+    "square_root",
+    "factorial"
+]

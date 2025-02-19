@@ -1,79 +1,76 @@
 """
-This module manages the arithmatic operations/calculations and history management.
+This module defines a Calculator class that performs mathematical operations on two Decimal 
+values and stores each calculation for future reference.
 """
-# pylint: disable=unnecessary-dunder-call, invalid-name
+from typing import Callable
+from .calculations import Calculation, Calculations
+from .operations import add, subtract, multiply, divide, percentage, square_root, factorial
+from decimal import Decimal
 import math
-from calculator.calculations import Calculation
 
 class Calculator:
-    """A Calculator that supports basic arithmetic operations and history tracking."""
-
     history = []
-
     @staticmethod
-    def add(a: float, b: float) -> float:
-        """Add two numbers."""
-        return a + b
-
-    @staticmethod
-    def subtract(a: float, b: float) -> float:
-        """Subtract two numbers."""
-        return a - b
-
-    @staticmethod
-    def multiply(a: float, b: float) -> float:
-        """Multiply two numbers."""
-        return a * b
-
-    @staticmethod
-    def divide(a: float, b: float) -> float:
-        """Divide two numbers, raising an exception if dividing by zero."""
-        if b == 0:
-            raise ValueError("Cannot divide by zero.")
-        return a / b
-
-    @staticmethod
-    def percentage(a: float, b: float) -> float:
-        """
-        Calculates percentage of 'a' based on 'b'.
-        """
-        result = (a * b) / 100
+    # def execute(a: Decimal, b: Decimal | None, operation: Callable) -> Decimal:
+    def execute(a, b, operation: Callable):    
+        if b is None:  # Handle operations that require only one argument (like square root)
+            result = operation(a, None)
+            calculation = Calculation(a, None, operation)
+        else:
+            result = operation(a, b)
+            calculation = Calculation(a, b, operation)
+        
+        Calculations.add_calculation(calculation)
         return result
 
-    @staticmethod
-    def square_root(a: float) -> float:
-        """
-        Calculates the square root of 'a'.
-        """
-        return math.sqrt(a)
 
-    # @staticmethod
-    # def factorial(a: int) -> int:
-    #     """
-    #     Calculates the factorial of 'a'.
-    #     """
-    #     return math.factorial(a)
     @staticmethod
-    def factorial(a: int) -> int:
-        """
-        Calculates the factorial of 'a'.
-        Raises ValueError if 'a' is not a non-negative integer.
-        """
-        if not isinstance(a, int) or a < 0:
-            raise ValueError("Factorial is only defined for non-negative integers")
-        return math.factorial(a)
+    def add(a: Decimal, b: Decimal) -> Decimal:
+        return Calculator.execute(a, b, add)
+
+    @staticmethod
+    def subtract(a: Decimal, b: Decimal) -> Decimal:
+        return Calculator.execute(a, b, subtract)
+
+    @staticmethod
+    def multiply(a: Decimal, b: Decimal) -> Decimal:
+        return Calculator.execute(a, b, multiply)
+
+    @staticmethod
+    def divide(a: Decimal, b: Decimal) -> Decimal:
+        return Calculator.execute(a, b, divide)
+
+    @staticmethod
+    def percentage(a: Decimal, b: Decimal) -> Decimal:
+        return Calculator.execute(a, b, percentage)
+
+    @staticmethod
+    def square_root(a: Decimal) -> Decimal:
+        return Decimal(math.sqrt(a))
     
-    @classmethod
-    def add_calculation(cls, calculation: Calculation) -> None:
-        """Add a calculation to the history."""
-        cls.history.append(calculation)
+    @staticmethod
+    def factorial(a: Decimal) -> Decimal:
+        if not isinstance(a, (int, Decimal)) or a % 1 != 0:
+            raise ValueError("Factorial is only defined for integers.")
+        if a < 0:
+            raise ValueError("Factorial is not defined for negative numbers.")
+        return Decimal(math.factorial(int(a)))
 
-    @classmethod
-    def get_last_calculation(cls) -> Calculation:
-        """Get the last calculation."""
-        return cls.history[-1]
+    @staticmethod
+    def execute(a: Decimal, b: Decimal, operation: Callable[[Decimal, Decimal], Decimal]) -> Decimal:
+        calculation = Calculation(a, b, operation)
+        Calculations.add_calculation(calculation)
+        return calculation.result
 
-    @classmethod
-    def clear_history(cls) -> None:
-        """Clear the history."""
-        cls.history.clear()
+    @staticmethod
+    def clear_history():
+        Calculator.history.clear()
+
+    @staticmethod
+    def get_last_calculation():
+        return Calculator.history[-1] if Calculator.history else None
+
+    def test_update_operands():
+        calc = Calculation(Decimal(5), Decimal(3), add)  # use the add function, not "add" as a string
+        calc.update_operands(Decimal(10), Decimal(5))
+        assert calc.result == add(Decimal(10), Decimal(5))
